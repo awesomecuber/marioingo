@@ -1,28 +1,51 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png" />
-    <HelloWorld msg="Welcome to Your Vue.js App" />
+    <bingo-board class="board" />
+    <about-bingo class="about" />
   </div>
 </template>
 
 <script>
-import HelloWorld from "./components/HelloWorld.vue";
+import AboutBingo from "./components/AboutBingo.vue";
+import BingoBoard from "./components/BingoBoard.vue";
 
 export default {
   name: "App",
   components: {
-    HelloWorld
+    AboutBingo,
+    BingoBoard
   }
 };
 </script>
 
 <style>
+body {
+  background: #111;
+  margin: 0;
+  padding: 0;
+}
+
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+  height: 100%;
+  line-height: 15px;
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 0.8em;
+  font-weight: 400;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.3);
+  color: #bec7d2;
+  width: 1000px;
+  margin: 0 auto;
+  padding: 8px 0 8px 16px;
+}
+
+.about {
+  float: right;
+  width: 330px;
+}
+
+.board {
+  float: left;
+  margin-right: 16px;
+  width: 650px;
 }
 </style>
