@@ -1,7 +1,7 @@
 <template>
   <div>
     <div id="table" :style="[gridStyle]">
-      <div class="margin">TL-BR</div>
+      <div class="margin"></div>
       <div v-for="col in objectives.length" :key="col" class="margin">
         COL{{ col }}
       </div>
@@ -11,11 +11,13 @@
           v-for="col in objectives.length"
           :key="row + '' + col"
           class="item"
+          :class="objectives[row - 1][col - 1].state"
+          :style="textStyle"
+          @click="spotClicked(objectives[row - 1][col - 1])"
         >
           {{ objectives[row - 1][col - 1].name }}
         </div>
       </template>
-      <div class="margin">BL-TR</div>
     </div>
     <h2>Size:</h2>
     <vue-slider
@@ -44,13 +46,14 @@
         <v-select
           class="select"
           :options="types"
-          v-model="selectedType"
+          v-model="type"
           :clearable="false"
-          :reduce="selectedType => selectedType.code"
+          :searchable="false"
+          :reduce="type => type.code"
         ></v-select>
       </h2>
       <h2>
-        Seed: <input v-model="seed" maxlength="8" />
+        Seed: <input v-model="seed" maxlength="20" />
         <button @click="seed = generateSeed()">
           Random
         </button>
@@ -74,30 +77,22 @@ export default {
     vSelect
   },
   data: () => {
-    let size = 6;
-    let difficulty = [1, 9];
-    let selectedType = "bingo";
-    let seed = Math.floor(Math.random() * 100000);
-    let objectives = boardGenerator(
-      size,
-      difficulty[0],
-      difficulty[1],
-      seed,
-      selectedType
-    );
     return {
-      size,
-      difficulty,
-      seed,
-      lastSeed: seed,
-      objectives,
+      size: 5,
+      difficulty: [1, 9],
+      seed: "",
+      lastSeed: "",
+      objectives: [],
       types: [
         { label: "Bingo", code: "bingo" },
         { label: "Tic-Tac-Toe", code: "ttt" },
         { label: "Two by Two Block", code: "2x2" }
       ],
-      selectedType
+      type: "bingo"
     };
+  },
+  created() {
+    this.onLoad(this.$route.query);
   },
   computed: {
     gridStyle: function() {
@@ -105,27 +100,116 @@ export default {
         gridTemplateColumns: `1fr repeat(${this.objectives.length},
                               ${12 / this.objectives.length}fr)`,
         gridTemplateRows: `1fr repeat(${this.objectives.length},
-                           ${12 / this.objectives.length}fr) 1fr`
+                           ${16 / this.objectives.length}fr)`
+      };
+    },
+    textStyle: function() {
+      let n = this.objectives.length;
+      if (n === 8) {
+        return {
+          fontSize: "0.8em"
+        };
+      } else if (n === 7) {
+        return {
+          fontSize: "0.9em"
+        };
+      } else if (n === 6) {
+        return {
+          fontSize: "1.1em"
+        };
+      }
+      return {
+        fontSize: "1.3em"
       };
     }
   },
+  watch: {
+    $route(to) {
+      this.onLoad(to.query);
+    }
+  },
   methods: {
+    onLoad: function(query) {
+      let needReload = false;
+
+      // variable + P means url parameter
+      let sizeP = Number(query.size);
+      if (sizeP && sizeP >= 3 && sizeP <= 8) {
+        this.size = sizeP;
+      } else {
+        needReload = true;
+      }
+
+      let minDiffP = Number(query.minDiff);
+      let maxDiffP = Number(query.maxDiff);
+      if (
+        minDiffP &&
+        maxDiffP &&
+        minDiffP >= 1 &&
+        maxDiffP <= 9 &&
+        maxDiffP - minDiffP >= 3
+      ) {
+        this.difficulty[0] = minDiffP;
+        this.difficulty[1] = maxDiffP;
+      } else {
+        needReload = true;
+      }
+
+      let seedP = query.seed;
+      if (seedP && seedP.length <= 20) {
+        this.seed = seedP;
+        this.lastSeed = seedP;
+      } else {
+        needReload = true;
+        this.seed = this.generateSeed();
+        this.lastSeed = this.seed;
+      }
+
+      if (needReload) {
+        this.$router.replace({
+          query: {
+            size: this.size,
+            minDiff: this.difficulty[0],
+            maxDiff: this.difficulty[1],
+            seed: this.seed,
+            type: this.type
+          }
+        });
+      } else {
+        this.objectives = boardGenerator(
+          this.size,
+          this.difficulty[0],
+          this.difficulty[1],
+          this.seed,
+          this.type
+        );
+      }
+    },
     generateSeed: function() {
-      return Math.floor(Math.random() * 100000);
+      return String(Math.floor(Math.random() * 100000));
     },
     regenerate: function() {
       if (this.seed === this.lastSeed) {
         this.seed = this.generateSeed();
       }
-      this.lastSeed = this.seed;
-
-      this.objectives = boardGenerator(
-        this.size,
-        this.difficulty[0],
-        this.difficulty[1],
-        this.seed,
-        this.selectedType
-      );
+      this.$router.replace({
+        query: {
+          size: this.size,
+          lowDiff: this.difficulty[0],
+          highDiff: this.difficulty[1],
+          seed: this.seed,
+          type: this.type
+        }
+      });
+    },
+    spotClicked: function(objective) {
+      if (objective.state === "black") {
+        objective.state = "green";
+      } else if (objective.state === "green") {
+        objective.state = "red";
+      } else if (objective.state === "red") {
+        objective.state = "black";
+      }
     }
   }
 };
@@ -141,7 +225,6 @@ export default {
 }
 
 #table > div {
-  cursor: pointer;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -158,7 +241,6 @@ export default {
 .item {
   -moz-box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.6);
   -webkit-box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.6);
-  background: #000;
   border: 1px #424242 solid;
   box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.6);
   cursor: pointer;
@@ -166,14 +248,29 @@ export default {
   text-align: center;
 }
 
-.margin:hover {
-  background: #1448b3;
+.black {
+  background: #000;
+}
+
+.black:hover {
+  background: #001a36;
   color: #fff;
 }
 
-.item:hover {
-  background: #001a36;
-  color: #fff;
+.green {
+  background: #051;
+}
+
+.green:hover {
+  background: #072;
+}
+
+.red {
+  background: #501;
+}
+
+.red:hover {
+  background: #702;
 }
 
 #typeseed {
@@ -195,7 +292,7 @@ export default {
 }
 
 input {
-  width: 110px;
+  width: 200px;
 }
 
 button {

@@ -81,17 +81,29 @@ function improveGrid(grid, patternType, iterations) {
   }
 }
 
-function replaceNumbersWithObjectives(grid, patternType) {
+function getGridWithObjectives(grid, patternType) {
   let n = grid.length;
   let patterns = getPatterns(n, patternType);
+
+  let newGrid = [];
+  for (let i = 0; i < n; i++) {
+    let newRow = [];
+    for (let j = 0; j < n; j++) {
+      newRow.push(null);
+    }
+    newGrid.push(newRow);
+  }
+
   let order = [];
   for (let i = 0; i < n * n; i++) {
     order.push(i);
   }
   shuffle(order);
+
   order.forEach(gridSpot => {
     let x = gridSpot % n;
     let y = Math.floor(gridSpot / n);
+
     let possibleObjectives = objectiveList[grid[y][x]];
     let first = randint(possibleObjectives.length);
     let cur = first;
@@ -101,8 +113,8 @@ function replaceNumbersWithObjectives(grid, patternType) {
       let synergy = 0;
       let curTypes = possibleObjectives[cur].types;
       getRelatedSpots(gridSpot, patterns).forEach(relatedSpot => {
-        let otherSquare = grid[Math.floor(relatedSpot / n)][relatedSpot % n];
-        if (isNaN(otherSquare)) {
+        let otherSquare = newGrid[Math.floor(relatedSpot / n)][relatedSpot % n];
+        if (otherSquare !== null) {
           let otherTypes = otherSquare.types;
           otherTypes.forEach(otherType => {
             if (curTypes.includes(otherType)) {
@@ -122,7 +134,15 @@ function replaceNumbersWithObjectives(grid, patternType) {
         cur = 0;
       }
     } while (lowestSynergy !== 0 && cur !== first);
-    grid[Math.floor(gridSpot / n)][gridSpot % n] = possibleObjectives[best];
+    newGrid[Math.floor(gridSpot / n)][gridSpot % n] = possibleObjectives[best];
+  });
+  return newGrid.map(row => {
+    return row.map(spot => {
+      return {
+        name: spot.name,
+        state: "black"
+      };
+    });
   });
 }
 
@@ -169,13 +189,10 @@ export default function(n, lowerDiff, higherDiff, seed, patternType) {
   rng = new seedrandom(seed);
   let grid = getRandomGrid(n, lowerDiff, higherDiff);
   let patterns = getPatterns(n, patternType);
-
   let oldError = getError(grid, patterns);
   improveGrid(grid, patternType, 1000);
   console.log(
     `Old Error: ${oldError} | New Error: ${getError(grid, patterns)}`
   );
-
-  replaceNumbersWithObjectives(grid, patternType);
-  return grid;
+  return getGridWithObjectives(grid, patternType);
 }

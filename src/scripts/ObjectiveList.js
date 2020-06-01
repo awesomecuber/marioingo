@@ -35,7 +35,7 @@ objectiveList[2] = [
   { name: "Two Stars in WDW", types: ["WDW"] },
   { name: "Two Stars in TTM", types: ["TTM"] },
   { name: "Two Stars in TTC", types: ["TTC"] },
-  { name: "Two Stars in RR", types: ["RR"] }, // maybe 3?
+  { name: "Two Stars in RR", types: ["RR"] }, // maybe level 3?
   { name: "Two Stars in SL", types: ["SL"] }
 ];
 objectiveList[3] = [
