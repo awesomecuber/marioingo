@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div id="all">
     <div id="table" :style="[gridStyle]">
       <div class="margin"></div>
       <div v-for="col in objectives.length" :key="col" class="margin">
@@ -216,11 +216,14 @@ export default {
 </script>
 
 <style>
+#all {
+  width: 50vw;
+  margin: 16px auto 0;
+}
+
 #table {
-  margin-top: 16px;
-  margin-right: 8px;
   text-align: center;
-  height: 650px;
+  height: 50vw;
   display: grid;
 }
 
@@ -246,6 +249,10 @@ export default {
   cursor: pointer;
   padding: 0 5px;
   text-align: center;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 .black {
