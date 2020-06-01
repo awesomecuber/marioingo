@@ -1,5 +1,6 @@
 /* eslint-disable no-unused-vars */
 import objectiveList from "./ObjectiveList.js";
+import getPatterns from "./PatternGenerator.js";
 import seedrandom from "seedrandom";
 let rng = new seedrandom();
 
@@ -25,48 +26,6 @@ function getRandomGrid(n, lowerDiff, higherDiff) {
     grid.push(arr.splice(0, n));
   }
   return grid;
-}
-
-function getPatterns(n, type) {
-  switch (type) {
-    case "bingo":
-      return getLinePatterns(n, n);
-    case "ttt":
-      return getLinePatterns(n, 3);
-  }
-}
-
-/**
- *
- * @param {Number} n size of board
- * @param {Number} l length of line
- */
-function getLinePatterns(n, l) {
-  let patterns = [];
-  for (let i = 0; i <= n - l; i++) {
-    for (let j = 0; j < n; j++) {
-      let rowPattern = [];
-      let colPattern = [];
-      for (let k = 0; k < l; k++) {
-        rowPattern.push(j * n + k + i);
-        colPattern.push(j + (k + i) * n);
-      }
-      patterns.push(rowPattern);
-      patterns.push(colPattern);
-
-      if (j <= n - l) {
-        let tlbrPattern = [];
-        let trblPattern = [];
-        for (let k = 0; k < l; k++) {
-          tlbrPattern.push((k + j) * n + k + i);
-          trblPattern.push((k + j) * n + l - 1 - k + i);
-        }
-        patterns.push(tlbrPattern);
-        patterns.push(trblPattern);
-      }
-    }
-  }
-  return patterns;
 }
 
 function getMagicNumber(grid, patternSize) {
@@ -141,7 +100,7 @@ function replaceNumbersWithObjectives(grid, patternType) {
     do {
       let synergy = 0;
       let curTypes = possibleObjectives[cur].types;
-      let toCheck = getRelatedSpots(gridSpot, patterns).forEach(relatedSpot => {
+      getRelatedSpots(gridSpot, patterns).forEach(relatedSpot => {
         let otherSquare = grid[Math.floor(relatedSpot / n)][relatedSpot % n];
         if (isNaN(otherSquare)) {
           let otherTypes = otherSquare.types;
@@ -164,7 +123,6 @@ function replaceNumbersWithObjectives(grid, patternType) {
       }
     } while (lowestSynergy !== 0 && cur !== first);
     grid[Math.floor(gridSpot / n)][gridSpot % n] = possibleObjectives[best];
-    console.log(lowestSynergy);
   });
 }
 
@@ -205,17 +163,19 @@ function randint(max) {
  * @param {Number} higherDiff Highest difficulty (1-9)
  * Should be at least 3 higher than lowerDiff.
  * @param {String} seed (can also be a number)
- * @param {String} patternType Currently, "bingo" or "ttt".
+ * @param {String} patternType Currently, "bingo", "ttt", or "2x2".
  */
 export default function(n, lowerDiff, higherDiff, seed, patternType) {
   rng = new seedrandom(seed);
   let grid = getRandomGrid(n, lowerDiff, higherDiff);
   let patterns = getPatterns(n, patternType);
+
   let oldError = getError(grid, patterns);
   improveGrid(grid, patternType, 1000);
   console.log(
     `Old Error: ${oldError} | New Error: ${getError(grid, patterns)}`
   );
+
   replaceNumbersWithObjectives(grid, patternType);
   return grid;
 }

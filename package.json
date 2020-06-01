@@ -11,6 +11,7 @@
     "core-js": "^3.6.5",
     "seedrandom": "^3.0.5",
     "vue": "^2.6.11",
+    "vue-select": "^3.10.3",
     "vue-slider-component": "^3.1.4"
   },
   "devDependencies": {

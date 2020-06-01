@@ -38,12 +38,24 @@
       :min="1"
       :max="9"
     ></vue-slider>
-    <h2>
-      Seed: <input v-model="seed" maxlength="8" />
-      <button @click="seed = generateSeed()">
-        Random
-      </button>
-    </h2>
+    <div id="typeseed">
+      <h2>
+        Type:
+        <v-select
+          class="select"
+          :options="types"
+          v-model="selectedType"
+          :clearable="false"
+          :reduce="selectedType => selectedType.code"
+        ></v-select>
+      </h2>
+      <h2>
+        Seed: <input v-model="seed" maxlength="8" />
+        <button @click="seed = generateSeed()">
+          Random
+        </button>
+      </h2>
+    </div>
     <button @click="regenerate">Generate</button>
   </div>
 </template>
@@ -51,30 +63,40 @@
 <script>
 import VueSlider from "vue-slider-component";
 import "vue-slider-component/theme/default.css";
+import vSelect from "vue-select";
+import "vue-select/dist/vue-select.css";
 import boardGenerator from "../scripts/BoardGenerator.js";
 
 export default {
   name: "BingoBoard",
   components: {
-    VueSlider
+    VueSlider,
+    vSelect
   },
   data: () => {
     let size = 6;
     let difficulty = [1, 9];
+    let selectedType = "bingo";
     let seed = Math.floor(Math.random() * 100000);
     let objectives = boardGenerator(
       size,
       difficulty[0],
       difficulty[1],
       seed,
-      "bingo"
+      selectedType
     );
     return {
       size,
       difficulty,
       seed,
       lastSeed: seed,
-      objectives
+      objectives,
+      types: [
+        { label: "Bingo", code: "bingo" },
+        { label: "Tic-Tac-Toe", code: "ttt" },
+        { label: "Two by Two Block", code: "2x2" }
+      ],
+      selectedType
     };
   },
   computed: {
@@ -102,7 +124,7 @@ export default {
         this.difficulty[0],
         this.difficulty[1],
         this.seed,
-        "bingo"
+        this.selectedType
       );
     }
   }
@@ -154,8 +176,22 @@ export default {
   color: #fff;
 }
 
+#typeseed {
+  display: flex;
+  justify-content: space-between;
+}
+
 .slider {
   margin: 0px 10px 30px;
+}
+
+.select {
+  width: 200px;
+  display: inline-block;
+}
+
+.vs__selected {
+  color: #bec7d2;
 }
 
 input {
