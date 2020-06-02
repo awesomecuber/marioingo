@@ -165,6 +165,13 @@ export default {
         this.lastSeed = this.seed;
       }
 
+      let typeP = query.type;
+      if (typeP && this.types.map(type => type.code).includes(typeP)) {
+        this.type = typeP;
+      } else {
+        needReload = true;
+      }
+
       if (needReload) {
         this.$router.replace({
           query: {
