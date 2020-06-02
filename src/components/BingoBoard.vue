@@ -8,16 +8,52 @@
         </div>
         <template v-for="row in objectives.length">
           <div :key="'row' + row" class="margin">ROW{{ row }}</div>
-          <div
+          <v-container
             v-for="col in objectives.length"
             :key="row + '' + col"
             class="item"
             :class="objectives[row - 1][col - 1].state"
             :style="textStyle"
-            @click="spotClicked(objectives[row - 1][col - 1])"
+            @click.self="spotClicked(objectives[row - 1][col - 1])"
+            @click.self.right.prevent="spotMarked(objectives[row - 1][col - 1])"
           >
             {{ objectives[row - 1][col - 1].name }}
-          </div>
+            <template
+              v-if="
+                objectives[row - 1][col - 1].steps &&
+                  objectives[row - 1][col - 1].state !== 'ban'
+              "
+            >
+              <v-btn
+                x-small
+                class="minusbutton"
+                fab
+                color="gray"
+                v-if="objectives[row - 1][col - 1].stepsDone !== 0"
+                @click="decrementSteps(objectives[row - 1][col - 1])"
+              >
+                <v-icon dark>mdi-minus</v-icon>
+              </v-btn>
+              <h4 class="status">
+                {{ objectives[row - 1][col - 1].stepsDone }}/{{
+                  objectives[row - 1][col - 1].steps
+                }}
+              </h4>
+              <v-btn
+                x-small
+                class="plusbutton"
+                fab
+                color="gray"
+                v-if="
+                  objectives[row - 1][col - 1].stepsDone !==
+                    objectives[row - 1][col - 1].steps
+                "
+                @click="incrementSteps(objectives[row - 1][col - 1])"
+              >
+                <v-icon dark>mdi-plus</v-icon>
+              </v-btn>
+            </template>
+          </v-container>
         </template>
       </v-container>
     </v-responsive>
@@ -42,19 +78,18 @@
       :min="1"
       :max="9"
     ></vue-slider>
-    <div id="typeseed">
-      <h2>
-        Type:
+    <v-row justify="center">
+      <v-col>
         <v-select
+          dense
           class="select"
-          :options="types"
+          label="Type"
+          :items="types"
           v-model="type"
-          :clearable="false"
-          :searchable="false"
-          :reduce="type => type.code"
         ></v-select>
-      </h2>
-      <h2>
+      </v-col>
+      <v-spacer></v-spacer>
+      <v-col>
         <v-text-field
           dense
           class="input"
@@ -68,8 +103,8 @@
             </v-btn>
           </template>
         </v-text-field>
-      </h2>
-    </div>
+      </v-col>
+    </v-row>
     <v-btn @click="regenerate">Generate</v-btn>
   </v-container>
 </template>
@@ -77,15 +112,12 @@
 <script>
 import VueSlider from "vue-slider-component";
 import "vue-slider-component/theme/default.css";
-import vSelect from "vue-select";
-import "vue-select/dist/vue-select.css";
 import boardGenerator from "../scripts/BoardGenerator.js";
 
 export default {
   name: "BingoBoard",
   components: {
-    VueSlider,
-    vSelect
+    VueSlider
   },
   data: () => {
     return {
@@ -95,9 +127,9 @@ export default {
       lastSeed: "",
       objectives: [],
       types: [
-        { label: "Bingo", code: "bingo" },
-        { label: "Tic-Tac-Toe", code: "ttt" },
-        { label: "Two by Two Block", code: "2x2" }
+        { text: "Bingo", value: "bingo" },
+        { text: "Tic-Tac-Toe", value: "ttt" },
+        { text: "Two by Two Block", value: "2x2" }
       ],
       type: "bingo"
     };
@@ -177,7 +209,7 @@ export default {
       }
 
       let typeP = query.type;
-      if (typeP && this.types.map(type => type.code).includes(typeP)) {
+      if (typeP && this.types.map(type => type.value).includes(typeP)) {
         this.type = typeP;
       } else {
         needReload = true;
@@ -201,6 +233,14 @@ export default {
           this.seed,
           this.type
         );
+
+        this.objectives.forEach(row => {
+          row.forEach(objective => {
+            if (objective.steps) {
+              this.$set(objective, "stepsDone", 0);
+            }
+          });
+        });
       }
     },
     generateSeed: function() {
@@ -221,12 +261,41 @@ export default {
       });
     },
     spotClicked: function(objective) {
-      if (objective.state === "black") {
-        objective.state = "green";
-      } else if (objective.state === "green") {
-        objective.state = "red";
-      } else if (objective.state === "red") {
-        objective.state = "black";
+      if (objective.state === "blank") {
+        objective.state = "done";
+        if (objective.steps) {
+          objective.stepsDone = objective.steps;
+        }
+      } else if (objective.state === "done") {
+        objective.state = "blank";
+        if (objective.steps) {
+          objective.stepsDone = 0;
+        }
+      } else if (objective.state === "wip") {
+        this.incrementSteps(objective);
+      }
+    },
+    spotMarked: function(objective) {
+      if (objective.state === "blank") {
+        objective.state = "ban";
+      } else if (objective.state === "ban") {
+        objective.state = "blank";
+      }
+    },
+    incrementSteps: function(objective) {
+      objective.stepsDone++;
+      if (objective.stepsDone === 1) {
+        objective.state = "wip";
+      } else if (objective.stepsDone === objective.steps) {
+        objective.state = "done";
+      }
+    },
+    decrementSteps: function(objective) {
+      objective.stepsDone--;
+      if (objective.stepsDone === objective.steps - 1) {
+        objective.state = "wip";
+      } else if (objective.stepsDone === 0) {
+        objective.state = "blank";
       }
     }
   }
@@ -257,66 +326,77 @@ export default {
 .item {
   -moz-box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.6);
   -webkit-box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.6);
+  color: #fff;
   border: 1px #424242 solid;
   box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.6);
   cursor: pointer;
-  padding: 0 5px;
   text-align: center;
   -moz-user-select: none;
   -webkit-user-select: none;
   -ms-user-select: none;
   user-select: none;
+  position: relative;
 }
 
-.black {
+.blank {
   background: #000;
 }
 
-.black:hover {
+.blank:hover {
   background: #001a36;
-  color: #fff;
 }
 
-.green {
+.done {
   background: #051;
 }
 
-.green:hover {
+.done:hover {
   background: #072;
 }
 
-.red {
+.ban {
   background: #501;
 }
 
-.red:hover {
+.ban:hover {
   background: #702;
 }
 
-#typeseed {
-  display: flex;
-  justify-content: space-between;
+.wip {
+  background: #ff8000;
+}
+
+.wip:hover {
+  background: #ffbf00;
 }
 
 .slider {
   margin: 0px 10px 30px;
 }
 
-.select {
-  width: 200px;
-  display: inline-block;
+.plusbutton {
+  position: absolute !important;
+  right: 5px;
+  top: 5px;
+  display: none !important;
 }
 
-.vs__selected {
-  color: #bec7d2;
+.minusbutton {
+  position: absolute !important;
+  left: 5px;
+  top: 5px;
+  display: none !important;
 }
 
-.input {
-  width: 200px;
-  display: inline-block;
+.status {
+  position: absolute !important;
+  bottom: 5px;
+  display: none !important;
 }
 
-.randombtn {
-  display: inline-block;
+.item:hover .plusbutton,
+.item:hover .minusbutton,
+.item:hover .status {
+  display: inline-block !important;
 }
 </style>

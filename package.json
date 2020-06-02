@@ -12,7 +12,6 @@
     "seedrandom": "^3.0.5",
     "vue": "^2.6.11",
     "vue-router": "^3.2.0",
-    "vue-select": "^3.10.3",
     "vue-slider-component": "^3.1.4",
     "vuetify": "^2.2.11"
   },

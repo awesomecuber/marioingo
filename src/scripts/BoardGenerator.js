@@ -135,14 +135,15 @@ function getGridWithObjectives(grid, patternType) {
         cur = 0;
       }
     } while (lowestSynergy !== 0 && cur !== first);
-    newGrid[Math.floor(gridSpot / n)][gridSpot % n] = possibleObjectives[best];
+    // this copies the object, can be removed when i guarantee no duplicate objectives
+    newGrid[Math.floor(gridSpot / n)][gridSpot % n] = JSON.parse(
+      JSON.stringify(possibleObjectives[best])
+    );
   });
   return newGrid.map(row => {
     return row.map(spot => {
-      return {
-        name: spot.name,
-        state: "black"
-      };
+      spot.state = "blank";
+      return spot;
     });
   });
 }
