@@ -104,6 +104,7 @@ function getGridWithObjectives(grid, patternType) {
     let x = gridSpot % n;
     let y = Math.floor(gridSpot / n);
 
+    // EVENTUALLY: make it so that it's impossible to have the same objective twice on the board
     let possibleObjectives = objectiveList[grid[y][x]];
     let first = randint(possibleObjectives.length);
     let cur = first;
@@ -189,6 +190,7 @@ export default function(n, lowerDiff, higherDiff, seed, patternType) {
   rng = new seedrandom(seed);
   let grid = getRandomGrid(n, lowerDiff, higherDiff);
   let patterns = getPatterns(n, patternType);
+  console.log(patterns);
   let oldError = getError(grid, patterns);
   improveGrid(grid, patternType, 1000);
   console.log(
