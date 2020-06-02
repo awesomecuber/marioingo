@@ -1,24 +1,26 @@
 <template>
-  <div id="all">
-    <div id="table" :style="[gridStyle]">
-      <div class="margin"></div>
-      <div v-for="col in objectives.length" :key="col" class="margin">
-        COL{{ col }}
-      </div>
-      <template v-for="row in objectives.length">
-        <div :key="'row' + row" class="margin">ROW{{ row }}</div>
-        <div
-          v-for="col in objectives.length"
-          :key="row + '' + col"
-          class="item"
-          :class="objectives[row - 1][col - 1].state"
-          :style="textStyle"
-          @click="spotClicked(objectives[row - 1][col - 1])"
-        >
-          {{ objectives[row - 1][col - 1].name }}
+  <v-container id="all">
+    <v-responsive :aspect-ratio="1">
+      <v-container id="table" :style="[gridStyle]">
+        <div class="margin"></div>
+        <div v-for="col in objectives.length" :key="col" class="margin">
+          COL{{ col }}
         </div>
-      </template>
-    </div>
+        <template v-for="row in objectives.length">
+          <div :key="'row' + row" class="margin">ROW{{ row }}</div>
+          <div
+            v-for="col in objectives.length"
+            :key="row + '' + col"
+            class="item"
+            :class="objectives[row - 1][col - 1].state"
+            :style="textStyle"
+            @click="spotClicked(objectives[row - 1][col - 1])"
+          >
+            {{ objectives[row - 1][col - 1].name }}
+          </div>
+        </template>
+      </v-container>
+    </v-responsive>
     <h2>Size:</h2>
     <vue-slider
       class="slider"
@@ -53,14 +55,23 @@
         ></v-select>
       </h2>
       <h2>
-        Seed: <input v-model="seed" maxlength="20" />
-        <button @click="seed = generateSeed()">
-          Random
-        </button>
+        <v-text-field
+          dense
+          class="input"
+          label="Seed"
+          v-model="seed"
+          maxlength="20"
+        >
+          <template v-slot:append>
+            <v-btn text class="randombtn" @click="seed = generateSeed()">
+              Random
+            </v-btn>
+          </template>
+        </v-text-field>
       </h2>
     </div>
-    <button @click="regenerate">Generate</button>
-  </div>
+    <v-btn @click="regenerate">Generate</v-btn>
+  </v-container>
 </template>
 
 <script>
@@ -216,15 +227,10 @@ export default {
 </script>
 
 <style>
-#all {
-  width: 50vw;
-  margin: 16px auto 0;
-}
-
 #table {
   text-align: center;
-  height: 50vw;
   display: grid;
+  height: 100%;
 }
 
 #table > div {
@@ -298,28 +304,12 @@ export default {
   color: #bec7d2;
 }
 
-input {
+.input {
   width: 200px;
+  display: inline-block;
 }
 
-button {
+.randombtn {
   display: inline-block;
-  cursor: pointer;
-  font-weight: bold;
-  text-shadow: black 1px 1px 1px;
-  color: white;
-  margin: 4px 2px 4px 6px;
-  text-decoration: none;
-  padding: 4px 18px;
-  text-align: center;
-  -moz-border-radius: 15px;
-  border-radius: 15px;
-  border-left: 2px solid #2339a4;
-  border-right: 2px solid #1a2a88;
-  border-top: 2px solid #244ca6;
-  border-bottom: 2px solid #192686;
-  background-color: #1e3294;
-  background: -moz-linear-gradient(top, #2045c0 0%, #1e3294 100%);
-  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#2045c0', endColorstr='#1e3294',GradientType=0 );
 }
 </style>

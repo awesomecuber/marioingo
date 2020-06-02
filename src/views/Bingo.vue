@@ -1,8 +1,14 @@
 <template>
-  <div id="app">
-    <bingo-board class="board" />
-    <!-- <about-bingo class="about" /> -->
-  </div>
+  <v-container fluid id="app">
+    <v-row>
+      <v-col :cols="8">
+        <bingo-board class="board" />
+      </v-col>
+      <v-col :cols="4">
+        <about-bingo class="about" />
+      </v-col>
+    </v-row>
+  </v-container>
 </template>
 
 <script>
