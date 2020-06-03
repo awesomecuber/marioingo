@@ -98,7 +98,8 @@ export default {
       tooltips: {
         hat: "Your hat must be gone at the time the game is over",
         lives: "Your number of lives must be at least X when the game is over",
-        race: "Koopa the Quick in BoB, Rematch with Koopa the Quick in THI, and Penguin Race in CCM. You must collect the stars as well.",
+        race:
+          "Koopa the Quick in BoB, Rematch with Koopa the Quick in THI, and Penguin Race in CCM. You must collect the stars as well.",
         boss: "Bobomb King, Whomp King, Hand Boss in SSL, Wiggler",
         eachcourse: "The 15 main courses, not Bowser stages or secret stages",
         hmc: "The metal cap stage does not count as an HMC star"

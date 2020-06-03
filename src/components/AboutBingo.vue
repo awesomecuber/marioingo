@@ -19,36 +19,6 @@
       </li>
     </ul>
 
-    <p style="font-weight:bolder">Individual Item Rules:</p>
-    <ul>
-      <li>
-        Lose Marios Hat - your hat must be gone at the time the game is over.
-      </li>
-      <li>
-        X Lives - Your number of lives must be at least X when the game is over.
-      </li>
-      <li>
-        Win 3 Character Races - Koopa the Quick in BoB, Rematch with Koopa the
-        Quick in THI, and Penguin Race in CCM. You must collect the stars as
-        well.
-      </li>
-      <li>
-        Defeat all 4 Bosses - Bobomb King, Whomp King, Hand Boss in SSL, Wiggler
-      </li>
-      <li>
-        Peach's Slide x 2 - you must collect both stars from Peach's Slide.
-      </li>
-      <li>
-        1 star from each course means the 15 main courses, not Bowser stages or
-        secret stages.
-      </li>
-      <li>
-        X coins in one stage - you must collect a star while carrying at least X
-        coins.
-      </li>
-      <li>HMC stars - The metal cap stage does not count as an HMC star.</li>
-    </ul>
-
     <h2>About Video Game Bingo</h2>
     <p>
       To win a "Bingo" race, you must complete 5 of the tasks in a row
@@ -59,16 +29,15 @@
       a new board.
     </p>
     <p>
-      You can click on the squares to turn them green and red. This may help you
+      You can right click on the squares to turn them red. This may help you
       organize your route planning.
     </p>
 
-    <p>&nbsp;</p>
     <p>
-      <span class="note right"
-        >"New" SM64 Bingo by ArcaneZaros.<br />SRT Bingo v1 by Nmaster64 based
-        on SRL Bingo v5 by NarcissaWright.</span
-      >
+      <span class="note right">
+        Marioingo by Nicolas Brassard based on SRT Bingo v1 by Nmaster64 based
+        on SRL Bingo v5 by NarcissaWright.
+      </span>
     </p>
   </div>
 </template>
