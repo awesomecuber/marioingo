@@ -8,52 +8,13 @@
         </div>
         <template v-for="row in objectives.length">
           <div :key="'row' + row" class="margin">ROW{{ row }}</div>
-          <v-container
+          <bingo-spot
             v-for="col in objectives.length"
-            :key="row + '' + col"
-            class="item"
-            :class="objectives[row - 1][col - 1].state"
             :style="textStyle"
-            @click.self="spotClicked(objectives[row - 1][col - 1])"
-            @click.self.right.prevent="spotMarked(objectives[row - 1][col - 1])"
+            :key="row + '' + col"
+            :objective="objectives[row - 1][col - 1]"
           >
-            {{ objectives[row - 1][col - 1].name }}
-            <template
-              v-if="
-                objectives[row - 1][col - 1].steps &&
-                  objectives[row - 1][col - 1].state !== 'ban'
-              "
-            >
-              <v-btn
-                x-small
-                class="minusbutton"
-                fab
-                color="gray"
-                v-if="objectives[row - 1][col - 1].stepsDone !== 0"
-                @click="decrementSteps(objectives[row - 1][col - 1])"
-              >
-                <v-icon dark>mdi-minus</v-icon>
-              </v-btn>
-              <h4 class="status">
-                {{ objectives[row - 1][col - 1].stepsDone }}/{{
-                  objectives[row - 1][col - 1].steps
-                }}
-              </h4>
-              <v-btn
-                x-small
-                class="plusbutton"
-                fab
-                color="gray"
-                v-if="
-                  objectives[row - 1][col - 1].stepsDone !==
-                    objectives[row - 1][col - 1].steps
-                "
-                @click="incrementSteps(objectives[row - 1][col - 1])"
-              >
-                <v-icon dark>mdi-plus</v-icon>
-              </v-btn>
-            </template>
-          </v-container>
+          </bingo-spot>
         </template>
       </v-container>
     </v-responsive>
@@ -113,11 +74,13 @@
 import VueSlider from "vue-slider-component";
 import "vue-slider-component/theme/default.css";
 import boardGenerator from "../scripts/BoardGenerator.js";
+import BingoSpot from "../components/BingoSpot.vue";
 
 export default {
   name: "BingoBoard",
   components: {
-    VueSlider
+    VueSlider,
+    BingoSpot
   },
   data: () => {
     return {
@@ -131,7 +94,15 @@ export default {
         { text: "Tic-Tac-Toe", value: "ttt" },
         { text: "Two by Two Block", value: "2x2" }
       ],
-      type: "bingo"
+      type: "bingo",
+      tooltips: {
+        hat: "Your hat must be gone at the time the game is over",
+        lives: "Your number of lives must be at least X when the game is over",
+        race: "Koopa the Quick in BoB, Rematch with Koopa the Quick in THI, and Penguin Race in CCM. You must collect the stars as well.",
+        boss: "Bobomb King, Whomp King, Hand Boss in SSL, Wiggler",
+        eachcourse: "The 15 main courses, not Bowser stages or secret stages",
+        hmc: "The metal cap stage does not count as an HMC star"
+      }
     };
   },
   created() {
@@ -239,6 +210,9 @@ export default {
             if (objective.steps) {
               this.$set(objective, "stepsDone", 0);
             }
+            if (objective.tooltip) {
+              objective.tooltip = this.tooltips[objective.tooltip];
+            }
           });
         });
       }
@@ -259,44 +233,6 @@ export default {
           type: this.type
         }
       });
-    },
-    spotClicked: function(objective) {
-      if (objective.state === "blank") {
-        objective.state = "done";
-        if (objective.steps) {
-          objective.stepsDone = objective.steps;
-        }
-      } else if (objective.state === "done") {
-        objective.state = "blank";
-        if (objective.steps) {
-          objective.stepsDone = 0;
-        }
-      } else if (objective.state === "wip") {
-        this.incrementSteps(objective);
-      }
-    },
-    spotMarked: function(objective) {
-      if (objective.state === "blank") {
-        objective.state = "ban";
-      } else if (objective.state === "ban") {
-        objective.state = "blank";
-      }
-    },
-    incrementSteps: function(objective) {
-      objective.stepsDone++;
-      if (objective.stepsDone === 1) {
-        objective.state = "wip";
-      } else if (objective.stepsDone === objective.steps) {
-        objective.state = "done";
-      }
-    },
-    decrementSteps: function(objective) {
-      objective.stepsDone--;
-      if (objective.stepsDone === objective.steps - 1) {
-        objective.state = "wip";
-      } else if (objective.stepsDone === 0) {
-        objective.state = "blank";
-      }
     }
   }
 };
@@ -323,80 +259,7 @@ export default {
   font-weight: 700;
 }
 
-.item {
-  -moz-box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.6);
-  -webkit-box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.6);
-  color: #fff;
-  border: 1px #424242 solid;
-  box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.6);
-  cursor: pointer;
-  text-align: center;
-  -moz-user-select: none;
-  -webkit-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-  position: relative;
-}
-
-.blank {
-  background: #000;
-}
-
-.blank:hover {
-  background: #001a36;
-}
-
-.done {
-  background: #051;
-}
-
-.done:hover {
-  background: #072;
-}
-
-.ban {
-  background: #501;
-}
-
-.ban:hover {
-  background: #702;
-}
-
-.wip {
-  background: #ff8000;
-}
-
-.wip:hover {
-  background: #ffbf00;
-}
-
 .slider {
   margin: 0px 10px 30px;
-}
-
-.plusbutton {
-  position: absolute !important;
-  right: 5px;
-  top: 5px;
-  display: none !important;
-}
-
-.minusbutton {
-  position: absolute !important;
-  left: 5px;
-  top: 5px;
-  display: none !important;
-}
-
-.status {
-  position: absolute !important;
-  bottom: 5px;
-  display: none !important;
-}
-
-.item:hover .plusbutton,
-.item:hover .minusbutton,
-.item:hover .status {
-  display: inline-block !important;
 }
 </style>

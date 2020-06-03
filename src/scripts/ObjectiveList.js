@@ -3,10 +3,10 @@ var objectiveList = [];
 objectiveList[1] = [
   { name: "Red Coin Star in WF", types: ["WF"] },
   { name: "100 Coin Star in WF", types: ["WF"] },
-  { name: "Peach's Slide x 2", types: ["secrets"] },
+  { name: "Peach's Slide x 2", types: ["secrets"], tooltip: "pss" },
   { name: "Reach the Castle Roof", types: ["lives"] },
   { name: "2 Stars in LLL", types: ["LLL"] },
-  { name: "Lose Mario's Hat", types: [] },
+  { name: "Lose Mario's Hat", types: [], tooltip: "hat" },
   { name: "5 Castle Secret Stars", types: ["secrets"], steps: 5 },
   { name: "Big Bob-omb on the Summit BOB", types: ["BOB"] },
   { name: "Two Bowser Stage Red Coin Stars", types: ["bowserreds"] },
@@ -18,7 +18,7 @@ objectiveList[1] = [
   { name: "Inside the Ancient Pyramid SSL (eyerock)", types: ["SSL"] }
 ];
 objectiveList[2] = [
-  { name: "15 Lives", types: ["lives"] },
+  { name: "15 Lives", types: ["lives"], tooltip: "lives" },
   { name: "Mario Wings to the Sky BOB", types: ["BOB", "wingcap"] },
   { name: "Red Coin Star in HMC", types: ["HMC"] },
   { name: "All Stars in WF", types: ["WF"] },
@@ -46,7 +46,7 @@ objectiveList[3] = [
   { name: "Red Coin Star in BBH", types: ["BBH"] },
   { name: "7 Castle Secret Stars", types: ["secrets"], steps: 7 },
   { name: "100 Coin Star in LLL", types: ["LLL"] },
-  { name: "20 lives", types: ["lives"] },
+  { name: "20 lives", types: ["lives"], tooltip: "lives" },
   { name: "Red Coin Star in SSL", types: ["SSL", "wingcap"] },
   { name: "7 Total Stars in Both Snow Stages", types: ["CCM", "SL"], steps: 7 },
   { name: "100 Coin Star in JRB", types: ["JRB"] },
@@ -71,7 +71,7 @@ objectiveList[4] = [
   { name: "Complete all the slides", types: ["CCM", "TTM", "secrets", "slides"], steps: 3 },
   { name: "100 Coin Star in SSL", types: ["SSL"] },
   { name: "Into the Igloo SL", types: ["SL", "vanishcap"] },
-  { name: "25 Lives", types: ["lives"] },
+  { name: "25 Lives", types: ["lives"], tooltip: "lives" },
   { name: "6 Stars in LLL", types: ["LLL"] },
 ];
 objectiveList[5] = [
@@ -81,15 +81,15 @@ objectiveList[5] = [
   { name: "Collect the Caps DDD", types: ["DDD", "vanishcap"] },
   { name: "3 Cap Stage Stars", types: ["caps", "wingcap", "vanishcap", "metalcap", "secrets"], steps: 3 },
   { name: "100 Coin Star in TTM", types: ["TTM"] },
-  { name: "4 Stars each from SSL and HMC", types: ["SSL", "HMC"], steps: 2 },
-  { name: "4 Stars each from LLL and HMC", types: ["LLL", "HMC"], steps: 2 },
+  { name: "4 Stars each from SSL and HMC", types: ["SSL", "HMC"], steps: 2, tooltip: "hmc" },
+  { name: "4 Stars each from LLL and HMC", types: ["LLL", "HMC"], steps: 2, tooltip: "hmc" },
   { name: "4 Stars each from SSL and LLL", types: ["SSL", "LLL"], steps: 2 },
   { name: "All Stars in LLL", types: ["LLL"] },
   { name: "Four 100 Coin Stars", types: ["hundredcoin"], steps: 4 },
   { name: "Race Through Downtown WDW", types: ["WDW", "vanishcap"] },
   { name: "100 Coin Star in HMC", types: ["HMC"] },
   { name: "100 Coin Star in THI", types: ["THI"] },
-  { name: "5 Stars in HMC", types: ["HMC"] },
+  { name: "5 Stars in HMC", types: ["HMC"], tooltip: "hmc" },
   { name: "Red Coin Star in DDD", types: ["DDD"] },
   { name: "4 Stars each from BOB and CCM", types: ["BOB", "CCM"], steps: 2 },
   { name: "At least 1 star from 10 stages", types: ["starseach"], steps: 10 },
@@ -99,10 +99,10 @@ objectiveList[6] = [
   { name: "100 Coin Star in DDD", types: ["DDD"] },
   { name: "100 Coin Star in RR", types: ["RR"] },
   { name: "100 Coin Star in BOB", types: ["BOB", "wingcap"] },
-  { name: "30 Lives", types: ["lives"] },
+  { name: "30 Lives", types: ["lives"], tooltip: "lives" },
   { name: "Open 7 Cannons", types: ["cannons"], steps: 7 },
   { name: "1 Star in All Odd Number Courses", types: ["starsearch"], steps: 8 },
-  { name: "Defeat all 4 Mini-Bosses", types: ["SSL", "THI", "BOB", "WF"], steps: 4 },
+  { name: "Defeat all 4 Mini-Bosses", types: ["SSL", "THI", "BOB", "WF"], steps: 4, tooltip: "boss" },
   { name: "3 Stars each from JRB and BBH", types: ["JRB", "BBH"], steps: 2 },
   { name: "100 Coin Star in SL", types: ["SL", "vanishcap"] },
   { name: "Rematch with Koopa the Quick THI", types: ["THI", "race"] },
@@ -127,7 +127,7 @@ objectiveList[7] = [
   { name: "5 Stars in BBH", types: ["BBH"] },
   { name: "Open 9 Cannons", types: ["cannons"], steps: 9 },
   { name: "6 Stars in THI", types: ["THI"] },
-  { name: "Win All 3 Character Races", types: ["BOB", "CCM", "THI", "race"], steps: 3 }
+  { name: "Win All 3 Character Races", types: ["BOB", "CCM", "THI", "race"], steps: 3, tooltip: "race" }
 ];
 objectiveList[8] = [
   { name: "All Stars in TTC", types: ["TTC"] },
@@ -136,7 +136,7 @@ objectiveList[8] = [
   { name: "6 Stars in SSL", types: ["SSL"] },
   { name: "All Stars in TTM", types: ["TTM"] },
   { name: "All Stars in SSL", types: ["SSL"] },
-  { name: "At least 1 Star from each Stage", types: ["starseach", "manystar"], steps: 15 },
+  { name: "At least 1 Star from each Stage", types: ["starseach", "manystar"], steps: 15, tooltip: "eachstage" },
   { name: "At least 3 stars from 8 stages", types: ["starseach", "manystar"], steps: 8 },
   { name: "12 Castle Secret Stars", types: ["secrets", "aquarium"], steps: 12 },
   { name: "6 Stars in RR", types: ["RR"] },
