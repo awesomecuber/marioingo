@@ -32,7 +32,7 @@
           <v-icon dark>mdi-plus</v-icon>
         </v-btn>
       </template>
-      <v-tooltip top v-if="objective.tooltip">
+      <v-tooltip top v-if="objective.tooltip" max-width="200">
         <template v-slot:activator="{ on }">
           <v-icon color="grey" v-on="on" class="tooltip"
             >mdi-information</v-icon
@@ -167,6 +167,8 @@ export default {
 .status {
   position: absolute !important;
   bottom: 5px;
+  background-color: #272727;
+  padding: 1px 2px;
 }
 
 .tooltip {

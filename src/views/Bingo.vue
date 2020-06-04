@@ -1,24 +1,24 @@
 <template>
   <v-container fluid id="app">
-    <v-row justify="center">
-      <v-col :xl="5" :lg="6" :md="7" :sm="12">
+    <v-row no-gutters justify="center">
+      <v-col :xl="5" :lg="6" :md="8" :sm="12">
         <bingo-board class="board" />
       </v-col>
-      <v-col :xl="2" :md="3" :sm="12">
-        <about-bingo class="about" />
+      <v-col :xl="2" :md="4" :sm="12">
+        <bingo-sidebar class="about" />
       </v-col>
     </v-row>
   </v-container>
 </template>
 
 <script>
-import AboutBingo from "../components/AboutBingo.vue";
+import BingoSidebar from "../components/BingoSidebar.vue";
 import BingoBoard from "../components/BingoBoard.vue";
 
 export default {
   name: "App",
   components: {
-    AboutBingo,
+    BingoSidebar,
     BingoBoard
   }
 };

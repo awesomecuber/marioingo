@@ -1,9 +1,10 @@
 <template>
-  <div id="about_bingo">
+  <v-container id="about_bingo">
+    <v-btn color="blue" @click="createRoom">Create Multi Room</v-btn>
     <h2>About Super Mario 64 Bingo</h2>
     <p>This is a bingo board for Super Mario 64.</p>
 
-    <ul style="font-weight:bold;">
+    <ul>
       <li>Start from a new file and reset on GO!</li>
       <li>
         You are done when you collect the final bowser star to beat the game,
@@ -39,11 +40,43 @@
         on SRL Bingo v5 by NarcissaWright.
       </span>
     </p>
-  </div>
+  </v-container>
 </template>
 
 <script>
-export default {};
+import BingoConstants from "../scripts/config.js";
+import axios from "axios";
+
+export default {
+  name: "BingoSidebar",
+  computed: {
+    inMulti: function() {
+      return this.$route.query.room;
+    }
+  },
+  methods: {
+    createRoom: function() {
+      axios
+        .post(BingoConstants.SOCKET_URL + "addRoom", {
+          board: {
+            size: Number(this.$route.query.size),
+            minDiff: Number(this.$route.query.minDiff),
+            maxDiff: Number(this.$route.query.maxDiff),
+            seed: this.$route.query.seed,
+            type: this.$route.query.type
+          }
+        })
+        .then(res => {
+          console.log(res.data);
+          this.$router.replace({
+            query: {
+              room: res.data
+            }
+          });
+        });
+    }
+  }
+};
 </script>
 
 <style>

@@ -191,7 +191,6 @@ export default function(n, lowerDiff, higherDiff, seed, patternType) {
   rng = new seedrandom(seed);
   let grid = getRandomGrid(n, lowerDiff, higherDiff);
   let patterns = getPatterns(n, patternType);
-  console.log(patterns);
   let oldError = getError(grid, patterns);
   improveGrid(grid, patternType, 1000);
   console.log(

@@ -1,7 +1,7 @@
 <template>
   <v-container id="all">
     <v-responsive :aspect-ratio="1">
-      <v-container id="table" :style="[gridStyle]">
+      <v-container v-if="started" id="table" :style="[gridStyle]">
         <div class="margin"></div>
         <div v-for="col in objectives.length" :key="col" class="margin">
           COL{{ col }}
@@ -17,6 +17,9 @@
           </bingo-spot>
         </template>
       </v-container>
+      <v-container v-else id="placeholder" @click="started = true">
+        CLICK TO REVEAL BOARD
+      </v-container>
     </v-responsive>
     <h2>Size:</h2>
     <vue-slider
@@ -25,8 +28,8 @@
       tooltip="none"
       :adsorb="true"
       :marks="true"
-      :min="3"
-      :max="8"
+      :min="BingoConstants.MIN_SIZE"
+      :max="BingoConstants.MAX_SIZE"
     ></vue-slider>
     <h2>Difficulty:</h2>
     <vue-slider
@@ -35,9 +38,9 @@
       tooltip="none"
       :adsorb="true"
       :marks="true"
-      :min-range="3"
-      :min="1"
-      :max="9"
+      :min-range="BingoConstants.MIN_DIFF_DIFFERENCE"
+      :min="BingoConstants.MIN_DIFF"
+      :max="BingoConstants.MAX_DIFF"
     ></vue-slider>
     <v-row justify="center">
       <v-col>
@@ -71,10 +74,17 @@
 </template>
 
 <script>
+import BingoSpot from "../components/BingoSpot.vue";
+
 import VueSlider from "vue-slider-component";
 import "vue-slider-component/theme/default.css";
+
 import boardGenerator from "../scripts/BoardGenerator.js";
-import BingoSpot from "../components/BingoSpot.vue";
+import processParameters from "../scripts/ProcessParameters.js";
+import BingoConstants from "../scripts/config.js";
+
+import { v4 as uuid } from "uuid";
+import axios from "axios";
 
 export default {
   name: "BingoBoard",
@@ -84,18 +94,15 @@ export default {
   },
   data: () => {
     return {
-      size: 5,
-      difficulty: [1, 9],
+      size: BingoConstants.DEFAULT_SIZE,
+      difficulty: [BingoConstants.MIN_SIZE, BingoConstants.MAX_SIZE],
       seed: "",
       lastSeed: "",
       objectives: [],
-      types: [
-        { text: "Bingo", value: "bingo" },
-        { text: "Tic-Tac-Toe", value: "ttt" },
-        { text: "Two by Two Block", value: "2x2" }
-      ],
-      type: "bingo",
+      types: BingoConstants.TYPES,
+      type: BingoConstants.DEFAULT_TYPE,
       tooltips: {
+        // should probably be moved to ObjectiveList
         hat: "Your hat must be gone at the time the game is over",
         lives: "Your number of lives must be at least X when the game is over",
         race:
@@ -103,10 +110,15 @@ export default {
         boss: "Bobomb King, Whomp King, Hand Boss in SSL, Wiggler",
         eachcourse: "The 15 main courses, not Bowser stages or secret stages",
         hmc: "The metal cap stage does not count as an HMC star"
-      }
+      },
+      started: false,
+      BingoConstants // so that i can access in the DOM
     };
   },
   created() {
+    if (!localStorage.uid) {
+      localStorage.uid = uuid();
+    }
     this.onLoad(this.$route.query);
   },
   computed: {
@@ -120,7 +132,7 @@ export default {
     },
     textStyle: function() {
       let n = this.objectives.length;
-      if (n === 8) {
+      if (n >= 8) {
         return {
           fontSize: "0.8em"
         };
@@ -145,77 +157,59 @@ export default {
   },
   methods: {
     onLoad: function(query) {
-      let needReload = false;
+      if (!query.room) {
+        this.started = false;
+        let response = processParameters(query);
 
-      // variable + P means url parameter
-      let sizeP = Number(query.size);
-      if (sizeP && sizeP >= 3 && sizeP <= 8) {
-        this.size = sizeP;
-      } else {
-        needReload = true;
-      }
-
-      let minDiffP = Number(query.minDiff);
-      let maxDiffP = Number(query.maxDiff);
-      if (
-        minDiffP &&
-        maxDiffP &&
-        minDiffP >= 1 &&
-        maxDiffP <= 9 &&
-        maxDiffP - minDiffP >= 3
-      ) {
-        this.difficulty[0] = minDiffP;
-        this.difficulty[1] = maxDiffP;
-      } else {
-        needReload = true;
-      }
-
-      let seedP = query.seed;
-      if (seedP && seedP.length <= 20) {
-        this.seed = seedP;
-        this.lastSeed = seedP;
-      } else {
-        needReload = true;
-        this.seed = this.generateSeed();
-        this.lastSeed = this.seed;
-      }
-
-      let typeP = query.type;
-      if (typeP && this.types.map(type => type.value).includes(typeP)) {
-        this.type = typeP;
-      } else {
-        needReload = true;
-      }
-
-      if (needReload) {
-        this.$router.replace({
-          query: {
-            size: this.size,
-            minDiff: this.difficulty[0],
-            maxDiff: this.difficulty[1],
-            seed: this.seed,
-            type: this.type
-          }
-        });
-      } else {
-        this.objectives = boardGenerator(
-          this.size,
-          this.difficulty[0],
-          this.difficulty[1],
-          this.seed,
-          this.type
-        );
-
-        this.objectives.forEach(row => {
-          row.forEach(objective => {
-            if (objective.steps) {
-              this.$set(objective, "stepsDone", 0);
-            }
-            if (objective.tooltip) {
-              objective.tooltip = this.tooltips[objective.tooltip];
+        if (response.needReload) {
+          // the query params have some sort of issue, and therefore we need
+          // to replace them
+          this.$router.replace({
+            query: {
+              size: response.size,
+              minDiff: response.difficulty[0],
+              maxDiff: response.difficulty[1],
+              seed: response.seed,
+              type: response.type
             }
           });
-        });
+        } else {
+          // query params are good, generate the board
+          this.size = response.size;
+          this.difficulty = [response.difficulty[0], response.difficulty[1]];
+          this.seed = response.seed;
+          this.lastSeed = response.seed;
+          this.type = response.type;
+
+          this.objectives = boardGenerator(
+            this.size,
+            this.difficulty[0],
+            this.difficulty[1],
+            this.seed,
+            this.type
+          );
+
+          this.objectives.forEach(row => {
+            row.forEach(objective => {
+              if (objective.steps) {
+                this.$set(objective, "stepsDone", 0);
+              }
+              if (objective.tooltip) {
+                objective.tooltip = this.tooltips[objective.tooltip];
+              }
+            });
+          });
+        }
+      } else {
+        // this.$socket.emit("joinroom", query.room, localStorage.uid);
+        axios
+          .get(BingoConstants.SOCKET_URL + "rooms")
+          .then(res => res.data)
+          .then(rooms => {
+            this.$socket.emit("register", localStorage.uid);
+            console.log(rooms);
+          })
+          .catch(error => console.log(error));
       }
     },
     generateSeed: function() {
@@ -250,6 +244,16 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+#placeholder {
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #000811;
+  border: 1px #0a245a solid;
+  cursor: pointer;
 }
 
 .margin {
