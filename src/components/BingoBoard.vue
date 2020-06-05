@@ -13,6 +13,8 @@
             :style="textStyle"
             :key="row + '' + col"
             :objective="objectives[row - 1][col - 1]"
+            :objectiveNum="(row - 1) * objectives.length + (col - 1)"
+            :multiColor="multiColors[(row - 1) * objectives.length + (col - 1)]"
           >
           </bingo-spot>
         </template>
@@ -95,12 +97,14 @@ export default {
   data: () => {
     return {
       size: BingoConstants.DEFAULT_SIZE,
-      difficulty: [BingoConstants.MIN_SIZE, BingoConstants.MAX_SIZE],
+      difficulty: [BingoConstants.MIN_DIFF, BingoConstants.MAX_DIFF],
       seed: "",
       lastSeed: "",
       objectives: [],
       types: BingoConstants.TYPES,
       type: BingoConstants.DEFAULT_TYPE,
+      color: "",
+      marked: [],
       tooltips: {
         // should probably be moved to ObjectiveList
         hat: "Your hat must be gone at the time the game is over",
@@ -122,6 +126,22 @@ export default {
     this.onLoad(this.$route.query);
   },
   computed: {
+    inMulti: function() {
+      return this.$route.query.room;
+    },
+    multiColors: function() {
+      let toReturn = [];
+      for (let i = 0; i < this.objectives.length ** 2; i++) {
+        let color = "blank";
+        this.marked.forEach(colorMarks => {
+          if (colorMarks.marked.includes(i)) {
+            color = colorMarks.color;
+          }
+        });
+        toReturn.push(color);
+      }
+      return toReturn;
+    },
     gridStyle: function() {
       return {
         gridTemplateColumns: `1fr repeat(${this.objectives.length},
@@ -157,7 +177,7 @@ export default {
   },
   methods: {
     onLoad: function(query) {
-      if (!query.room) {
+      if (!this.inMulti) {
         this.started = false;
         let response = processParameters(query);
 
@@ -175,39 +195,41 @@ export default {
           });
         } else {
           // query params are good, generate the board
+          console.log("query", response);
           this.size = response.size;
           this.difficulty = [response.difficulty[0], response.difficulty[1]];
           this.seed = response.seed;
           this.lastSeed = response.seed;
           this.type = response.type;
 
-          this.objectives = boardGenerator(
-            this.size,
-            this.difficulty[0],
-            this.difficulty[1],
-            this.seed,
-            this.type
-          );
-
-          this.objectives.forEach(row => {
-            row.forEach(objective => {
-              if (objective.steps) {
-                this.$set(objective, "stepsDone", 0);
-              }
-              if (objective.tooltip) {
-                objective.tooltip = this.tooltips[objective.tooltip];
-              }
-            });
-          });
+          this.updateObjectives();
         }
       } else {
-        // this.$socket.emit("joinroom", query.room, localStorage.uid);
         axios
-          .get(BingoConstants.SOCKET_URL + "rooms")
+          .get(BingoConstants.SOCKET_URL + "getBoard?code=" + query.room)
           .then(res => res.data)
-          .then(rooms => {
-            this.$socket.emit("register", localStorage.uid);
-            console.log(rooms);
+          .then(board => {
+            if (JSON.stringify(board) !== "{}") {
+              this.$socket.emit("joinroom", query.room, localStorage.uid);
+              console.log("getBoard", board);
+              this.size = board.size;
+              this.difficulty = [board.minDiff, board.maxDiff];
+              this.seed = board.seed;
+              this.lastSeed = board.seed;
+              this.type = board.type;
+
+              this.updateObjectives();
+            } else {
+              this.$router.replace({
+                query: {
+                  size: this.size,
+                  minDiff: this.difficulty[0],
+                  maxDiff: this.difficulty[1],
+                  seed: this.seed,
+                  type: this.type
+                }
+              });
+            }
           })
           .catch(error => console.log(error));
       }
@@ -219,15 +241,62 @@ export default {
       if (this.seed === this.lastSeed) {
         this.seed = this.generateSeed();
       }
-      this.$router.replace({
-        query: {
+      if (this.inMulti) {
+        this.$socket.emit("updateboard", this.$route.query.room, {
           size: this.size,
-          lowDiff: this.difficulty[0],
-          highDiff: this.difficulty[1],
+          minDiff: this.difficulty[0],
+          maxDiff: this.difficulty[1],
           seed: this.seed,
           type: this.type
-        }
+        });
+      } else {
+        this.$router.replace({
+          query: {
+            size: this.size,
+            lowDiff: this.difficulty[0],
+            highDiff: this.difficulty[1],
+            seed: this.seed,
+            type: this.type
+          }
+        });
+      }
+    },
+    updateObjectives: function() {
+      this.objectives = boardGenerator(
+        this.size,
+        this.difficulty[0],
+        this.difficulty[1],
+        this.seed,
+        this.type
+      );
+
+      this.objectives.forEach(row => {
+        row.forEach(objective => {
+          if (objective.steps) {
+            this.$set(objective, "stepsDone", 0);
+          }
+          if (objective.tooltip) {
+            objective.tooltip = this.tooltips[objective.tooltip];
+          }
+        });
       });
+
+      this.started = false;
+    }
+  },
+  sockets: {
+    board_update: function(board) {
+      console.log("boardUpdate", board);
+      this.size = board.size;
+      this.difficulty = [board.minDiff, board.maxDiff];
+      this.seed = board.seed;
+      this.lastSeed = board.seed;
+      this.type = board.type;
+
+      this.updateObjectives();
+    },
+    marked_update: function(marked) {
+      this.marked = marked;
     }
   }
 };

@@ -1,7 +1,7 @@
 <template>
   <v-container
     class="item"
-    :class="objective.state"
+    :class="[colorClass, { 'darken-2': hovering }]"
     @click.self="spotClicked(objective)"
     @click.self.right.prevent="spotMarked(objective)"
     @mouseover="spotOver"
@@ -53,30 +53,93 @@ export default {
     };
   },
   props: {
-    objective: Object
+    objective: Object,
+    objectiveNum: Number,
+    multiColor: String
+  },
+  computed: {
+    inMulti: function() {
+      return this.$route.query.room;
+    },
+    colorClass: function() {
+      if (!this.inMulti) {
+        switch (this.objective.state) {
+          case "blank":
+            return "blank"; // vuetify doesnt work for me here
+          case "done":
+            return "green";
+          case "wip":
+            return "lime";
+          case "ban":
+            return "red";
+          default:
+            return "";
+        }
+      } else {
+        return this.multiColor;
+      }
+    }
   },
   methods: {
     spotClicked: function(objective) {
-      if (objective.state === "blank") {
-        objective.state = "done";
-        if (objective.steps) {
-          objective.stepsDone = objective.steps;
+      if (!this.inMulti) {
+        if (objective.state === "blank") {
+          objective.state = "done";
+          if (objective.steps) {
+            objective.stepsDone = objective.steps;
+          }
+        } else if (objective.state === "done") {
+          objective.state = "blank";
+          if (objective.steps) {
+            objective.stepsDone = 0;
+          }
+        } else if (objective.state === "wip") {
+          this.incrementSteps(objective);
         }
-      } else if (objective.state === "done") {
-        objective.state = "blank";
-        if (objective.steps) {
-          objective.stepsDone = 0;
+      } else {
+        if (objective.steps && objective.stepsDone > 0) {
+          if (objective.stepsDone === objective.steps) {
+            this.$socket.emit(
+              "toggleobjective",
+              localStorage.uid,
+              this.objectiveNum
+            );
+            objective.stepsDone = 0;
+          } else {
+            objective.stepsDone++;
+            if (objective.stepsDone === objective.steps) {
+              this.$socket.emit(
+                "toggleobjective",
+                localStorage.uid,
+                this.objectiveNum
+              );
+            }
+          }
+        } else {
+          this.$socket.emit(
+            "toggleobjective",
+            localStorage.uid,
+            this.objectiveNum
+          );
+          if (objective.steps) {
+            if (objective.stepsDone === 0) {
+              objective.stepsDone = objective.steps;
+            } else {
+              objective.stepsDone = 0;
+            }
+          }
         }
-      } else if (objective.state === "wip") {
-        this.incrementSteps(objective);
       }
     },
     spotMarked: function(objective) {
-      if (objective.state === "blank") {
-        objective.state = "ban";
-      } else if (objective.state === "ban") {
-        objective.state = "blank";
+      if (!this.inMulti) {
+        if (objective.state === "blank") {
+          objective.state = "ban";
+        } else if (objective.state === "ban") {
+          objective.state = "blank";
+        }
       }
+      // todo: mark in a multi with a star
     },
     spotOver: function() {
       this.hovering = true;
@@ -85,19 +148,39 @@ export default {
       this.hovering = false;
     },
     incrementSteps: function(objective) {
-      objective.stepsDone++;
+      objective.stepsDone++; // todo: check if its the right color
       if (objective.stepsDone === 1) {
-        objective.state = "wip";
+        if (!this.inMulti) {
+          objective.state = "wip";
+        }
       } else if (objective.stepsDone === objective.steps) {
-        objective.state = "done";
+        if (!this.inMulti) {
+          objective.state = "done";
+        } else {
+          this.$socket.emit(
+            "toggleobjective",
+            localStorage.uid,
+            this.objectiveNum
+          );
+        }
       }
     },
     decrementSteps: function(objective) {
       objective.stepsDone--;
       if (objective.stepsDone === objective.steps - 1) {
-        objective.state = "wip";
+        if (!this.inMulti) {
+          objective.state = "wip";
+        } else {
+          this.$socket.emit(
+            "toggleobjective",
+            localStorage.uid,
+            this.objectiveNum
+          );
+        }
       } else if (objective.stepsDone === 0) {
-        objective.state = "blank";
+        if (!this.inMulti) {
+          objective.state = "blank";
+        }
       }
     }
   }
@@ -126,26 +209,6 @@ export default {
 
 .blank:hover {
   background: #001a36;
-}
-
-.done {
-  background: #051;
-}
-
-.done:hover {
-  background: #072;
-}
-
-.ban {
-  background: #501;
-}
-
-.ban:hover {
-  background: #702;
-}
-
-.wip {
-  background: #ff8000;
 }
 
 .wip:hover {

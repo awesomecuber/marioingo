@@ -1,6 +1,40 @@
 <template>
   <v-container id="about_bingo">
-    <v-btn color="blue" @click="createRoom">Create Multi Room</v-btn>
+    <template v-if="!inMulti">
+      <v-btn class="mb-3" color="blue" @click="createRoom"
+        >Create Multi Room</v-btn
+      >
+      <v-text-field dense label="Code" v-model="code" maxlength="4">
+        <template v-slot:append>
+          <v-btn text @click="joinRoom">
+            Join
+          </v-btn>
+        </template>
+      </v-text-field>
+    </template>
+
+    <template v-else>
+      <v-btn class="mb-3" color="blue" @click="leaveRoom">Leave Room</v-btn>
+      <h2 class="mb-2">
+        Room Code: <span class="title">{{ $route.query.room }}</span>
+      </h2>
+      <v-row no-gutters>
+        <v-col
+          class="bcol"
+          :class="{ selected: color === selectedColor }"
+          :col="6"
+          v-for="color in colors"
+          :key="color"
+        >
+          <v-btn
+            :color="color"
+            class="button"
+            @click="changeColor(color)"
+          ></v-btn>
+        </v-col>
+      </v-row>
+    </template>
+    <br />
     <h2>About Super Mario 64 Bingo</h2>
     <p>This is a bingo board for Super Mario 64.</p>
 
@@ -49,6 +83,22 @@ import axios from "axios";
 
 export default {
   name: "BingoSidebar",
+  data: () => {
+    return {
+      code: "",
+      colors: [
+        "red",
+        "purple",
+        "indigo",
+        "light-blue",
+        "teal",
+        "light-green",
+        "yellow",
+        "orange"
+      ],
+      selectedColor: "red"
+    };
+  },
   computed: {
     inMulti: function() {
       return this.$route.query.room;
@@ -67,19 +117,67 @@ export default {
           }
         })
         .then(res => {
-          console.log(res.data);
           this.$router.replace({
             query: {
               room: res.data
             }
           });
         });
+    },
+    leaveRoom: function() {
+      this.$socket.emit("leaveroom", localStorage.uid);
+      this.$router.replace({});
+    },
+    joinRoom: function() {
+      // todo: add proper validation
+      if (this.code.length === 4) {
+        axios
+          .get(BingoConstants.SOCKET_URL + "rooms")
+          .then(res => res.data)
+          .then(rooms => {
+            if (rooms.includes(this.code)) {
+              this.$router.replace({
+                query: {
+                  room: this.code
+                }
+              });
+            }
+            this.code = "";
+          });
+      } else {
+        this.code = "";
+      }
+    },
+    changeColor: function(color) {
+      if (color !== this.selectedColor) {
+        this.selectedColor = color;
+        this.$socket.emit("changecolor", localStorage.uid, color);
+      }
+    }
+  },
+  sockets: {
+    color_select: function(color) {
+      this.selectedColor = color;
     }
   }
 };
 </script>
 
 <style>
+.bcol {
+  border: 2px black solid;
+  border-radius: 6px;
+}
+
+.selected {
+  border: 2px white solid;
+  border-radius: 6px;
+}
+
+.button {
+  width: 100%;
+}
+
 h2 {
   clear: both;
   color: #f7e279;

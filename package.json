@@ -16,7 +16,7 @@
     "vue": "^2.6.11",
     "vue-router": "^3.2.0",
     "vue-slider-component": "^3.1.4",
-    "vue-socket.io": "^3.0.9",
+    "vue-socket.io": "3.0.7",
     "vuetify": "^2.2.11"
   },
   "devDependencies": {
