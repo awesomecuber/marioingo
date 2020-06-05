@@ -4,12 +4,13 @@ import router from "./router";
 import vuetify from "./plugins/vuetify";
 import VueSocketIO from "vue-socket.io";
 import SocketIO from "socket.io-client";
+import config from "./scripts/config.js";
 
 Vue.config.productionTip = false;
 
 Vue.use(
   new VueSocketIO({
-    connection: SocketIO("http://localhost:3000/")
+    connection: SocketIO(config.SOCKET_URL)
   })
 );
 
