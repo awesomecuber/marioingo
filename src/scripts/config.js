@@ -13,6 +13,6 @@ export default {
   ],
   SOCKET_URL:
     process.env.NODE_ENV === "production"
-      ? "https://great-dalmuti-socket.herokuapp.com/"
+      ? "https://marioingo-socket.herokuapp.com/"
       : "http://localhost:3000/"
 };
