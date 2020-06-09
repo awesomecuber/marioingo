@@ -21,15 +21,30 @@
       <v-row no-gutters>
         <v-col
           class="bcol"
-          :class="{ selected: color === selectedColor }"
+          :class="{ selected: colors[colorIndex - 1] === selectedColor }"
           :col="6"
-          v-for="color in colors"
-          :key="color"
+          v-for="colorIndex in 4"
+          :key="colorIndex - 1"
         >
           <v-btn
-            :color="color"
+            :color="colors[colorIndex - 1]"
             class="button"
-            @click="changeColor(color)"
+            @click="changeColor(colors[colorIndex - 1])"
+          ></v-btn>
+        </v-col>
+      </v-row>
+      <v-row no-gutters>
+        <v-col
+          class="bcol"
+          :class="{ selected: colors[colorIndex + 3] === selectedColor }"
+          :col="6"
+          v-for="colorIndex in 4"
+          :key="colorIndex + 3"
+        >
+          <v-btn
+            :color="colors[colorIndex + 3]"
+            class="button"
+            @click="changeColor(colors[colorIndex + 3])"
           ></v-btn>
         </v-col>
       </v-row>
@@ -64,8 +79,8 @@
       a new board.
     </p>
     <p>
-      You can right click on the squares to turn them red. This may help you
-      organize your route planning.
+      (only in single player for now) You can right click on the squares to turn
+      them red. This may help you organize your route planning.
     </p>
 
     <p>

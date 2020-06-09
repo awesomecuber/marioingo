@@ -253,8 +253,8 @@ export default {
         this.$router.replace({
           query: {
             size: this.size,
-            lowDiff: this.difficulty[0],
-            highDiff: this.difficulty[1],
+            minDiff: this.difficulty[0],
+            maxDiff: this.difficulty[1],
             seed: this.seed,
             type: this.type
           }
