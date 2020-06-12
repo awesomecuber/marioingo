@@ -1,7 +1,7 @@
 <template>
   <v-container id="all">
     <v-responsive :aspect-ratio="1">
-      <v-container v-if="started" id="table" :style="[gridStyle]">
+      <v-container class="pa-0" v-if="started" id="table" :style="[gridStyle]">
         <div class="margin"></div>
         <div v-for="col in objectives.length" :key="col" class="margin">
           COL{{ col }}
